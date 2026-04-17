@@ -1,0 +1,36 @@
+name: Manual Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: "Git commit hash to rollback to"
+        required: true
+        type: string
+
+env:
+  IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/lab-cicd-docker-ec2
+
+jobs:
+  rollback:
+    name: Rollback to Specific Version
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: SSH and Rollback EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            echo "Rolling back to target version: ${{ inputs.commit_sha }}"
+
+            # Stop and remove the current malfunctioning container
+            sudo docker stop my-app-container || true
+            sudo docker rm my-app-container || true
+
+            # Run the container using the specified stable commit hash image
+            sudo docker run -d --name my-app-container --restart unless-stopped -p 80:3000 ${{ env.IMAGE_NAME }}:${{ inputs.commit_sha }}
+
+            echo "Rollback successfully completed!"

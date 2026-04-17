@@ -1,0 +1,13 @@
+{
+    "name": "lab-cicd-docker-ec2",
+    "version": "1.0.0",
+    "description": "CI/CD Pipeline Application",
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js",
+        "check": "node -c server.js"
+    },
+    "dependencies": {
+        "express": "^5.2.1"
+    }
+}
